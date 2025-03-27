@@ -1,9 +1,12 @@
 package com.example.AddingMoreFeaturesDemo.services;
 
 import com.example.AddingMoreFeaturesDemo.entities.Bunny;
+import com.example.AddingMoreFeaturesDemo.exceptions.ResourceNotFoundException;
 import com.example.AddingMoreFeaturesDemo.repositories.BunnyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +26,18 @@ public class BunnyService implements BunnyServiceInterface {
     }
     @Override
     public Bunny getBunnyById(long id){
+
+        /*Bunny bunny = bunnyRepository.findById(id).orElseThrow(()->{
+            System.out.println("logga");
+            throw new ResourceNotFoundException("Bunny","Id", id);
+        });
+        return bunny;*/
         Optional<Bunny> schrodingersBunny = bunnyRepository.findById(id);
         if(schrodingersBunny.isPresent()){
             return schrodingersBunny.get();
         }
-        return null;
+        // Implementera loggning
+        throw new ResourceNotFoundException("Bunny", "Id", id);
     }
 
     @Override
@@ -36,10 +46,15 @@ public class BunnyService implements BunnyServiceInterface {
         bunnyRepository.deleteById(id);
     }
 
+
     @Override
     public Bunny addBunny(Bunny bunny) {
+        // Har objektet bunny alla nödvändiga attribut?
+        if(bunny.getName() == null || bunny.getName().isEmpty()) {
+            // Utför åtgärd
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bunny must have a name");
+        }
         return bunnyRepository.save(bunny);
-
     }
 
     @Override
